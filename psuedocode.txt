@@ -1,0 +1,7 @@
+1. calculate escape velocity
+    a. calculate unscaled number density distribution of dark matter (nchi)
+        i. calculate luminosity
+            ~. find Tchi*
+    b. calculate total differential capture rate
+        i. integrate to get total number of particles
+            ~. * find energy transferred per unit stellar mass

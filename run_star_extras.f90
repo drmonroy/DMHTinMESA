@@ -28,14 +28,6 @@
       use math_lib
       use auto_diff
 
-      use captureRate
-      !use capture
-      !use escapeVelocity
-      use nchiCoefficient
-      !use diffCapture
-      use brent
-      use energyFunction
-
       implicit none
       
       ! these routines are called by the standard run_star check_model
@@ -239,8 +231,8 @@
 
 
       subroutine data_for_extra_profile_header_items(id, n, nz, names, vals, ierr)
-      	 use star_def, only: star_info, maxlen_profile_column_name
-      	 use const_def, only: dp
+      	use star_def, only: star_info, maxlen_profile_column_name
+      	use const_def, only: dp
          integer, intent(in) :: id, n, nz
          character (len=maxlen_profile_column_name) :: names(n)
          real(dp) :: vals(nz,n)
@@ -288,79 +280,31 @@
 
       subroutine my_energy_routine(id, ierr)
          use const_def, only: Rsun
+         use setup
+         use brent
+         use energyFunction
+
          integer, intent(in) :: id
          integer, intent(out) :: ierr
          type (star_info), pointer :: s
-         integer :: k
 
-         real(dp) :: mchi, coefficient, Ndarkmatter
-         real(dp) :: Tchival
-         real(dp), allocatable :: energyHArray(:), energyHeArray(:)
-         integer :: maxZone
-         real(dp) :: mH, mHe, nucmassconv
+         integer :: k
          character(len=37) :: filename
          integer :: filename_index
 
-         ierr = 0
          call star_ptr(id, s, ierr)
          if (ierr /= 0) return
-         
-         print*, "chemid", s% chem_id(1)
-         print*, "numspec", s% species
 
-         !Allocate the arrays
-         allocate(energyHArray(s% nz - 1),energyHeArray(s% nz - 1))
+         call set_vars(id,ierr)
+         print*, "numzones", numzones
+         print*, "star radius", radius(1)/(6.957D10)
 
-         !atomic masses in grams
-         mH = 1.674D-24
-         mHe = 6.646477D-24
+         call energyFunc(calculate_Tchi())
 
-         !Convert atomic masses to GeV
-         nucmassconv = 5.61D23
-         mH = mH*nucmassconv
-         mHe = mHe*nucmassconv
-
-         !Set dark matter mass
-         mchi = 10.d0
-
-         !Find the correct value of Tchi
-         !inputs are:
-         !the mass of the dark matter particle
-         !the mass of the species of consideration
-         !the array for the mass density of the star as a function of radius
-         !the array for the number density of the dark matter as a function of radius
-         !the array for the number density of the species as a function of radius
-         !the array for the temperature of the star as a function of radius
-         !the length of these arrays
-
-         Tchival = findTchi(id, ierr, mchi)
-
-         !Find the normalization of the dark matter number density distribution
-         coefficient = nchiCoeff(id, ierr, mchi, Tchival)
-         !print*, "coefficient", coefficient
-         Ndarkmatter = captureRateFunc(id, ierr, mchi) * s% star_age * 3.154D7
-         !print*, "Ndarkmatter", Ndarkmatter
-         coefficient = Ndarkmatter/coefficient
-         !print*, "coefficient", coefficient
-
-          do k=1, s%nz - 1
-            energyHArray(k) = (1.602D-3)*energyFunc(mchi, mH, &
-                        coefficient * nchiFunc(id, ierr, s% r(k)/(6.957D10), Tchival, mchi), &
-                        s% X(k) * s% rho(k) * nucmassconv/mH, &
-                        s% rho(k), &
-                        s% T(k), &
-                        Tchival)
-            ! print*, "energyH", energyHArray(k)
-            energyHeArray(k) = (1.602D-3)*energyFunc(mchi, mHe, &
-                        coefficient * nchiFunc(id, ierr, s% r(k)/(6.957D10), Tchival, mchi), &
-                        s% Y(k) * s% rho(k) * nucmassconv/mHe, &
-                        s% rho(k), &
-                        s% T(k), &
-                        Tchival)
-            ! print*, "energyHe", energyHeArray(k)
-            s% extra_heat(k) %val = energyHArray(k) + energyHeArray(k) ! erg/g/sec
+         do k=1, numzones
+            s% extra_heat(k) %val = heat_transfer(k) ! erg/g/sec
             ! print*, "extra energy", s% extra_heat(k) %val
-          end do
+         end do
          
          return
 

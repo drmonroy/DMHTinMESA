@@ -6,41 +6,24 @@ module nchiCoefficient
     
     contains
 
-        real(dp) function nchiCoeff(id, ierr, mchiIn, TchiIn)
-    
-            type (star_info), pointer :: starptr
-            integer, intent(in) :: id
-            integer, intent(out) :: ierr
+        real(dp) function nchiCoeff(TchiIn)
 
-            real(dp), intent(in) :: mchiIn, TchiIn
-            real(dp) :: mlowerbound,mupperbound, rlowerbound,rupperbound
-            real(dp) :: rholowerbound,rhoupperbound,flowerbound,fupperbound
+            real(dp), intent(in) :: TchiIn
+            real(dp) :: flowerbound,fupperbound
             real(dp) :: integralIncrement
-            integer :: index
+            integer :: k
 
-            call star_ptr(id, starptr, ierr)
-            if (ierr /= 0) return
+            !sets values in array nchi
+            call nchiFunc(TchiIn)
 
-            nchiCoeff = 0._dp
-            index = 1
-            
-            do while (index < starptr% nz)
-                !print*, "nchicoeffIndex", index
-                mlowerbound = starptr% m(index+1)/(1.988D33)
-                rlowerbound = starptr% r(index+1)/(6.957D10)
-                rholowerbound = starptr% rho(index+1)
-            
-                mupperbound = starptr% m(index)/(1.988D33)
-                rupperbound = starptr% r(index)/(6.957D10)
-                rhoupperbound = starptr% rho(index)
+            nchiCoeff = 0.D0
+            do k = 1, numzones
 
-                flowerbound = nchiFunc(id, ierr, rlowerbound, TchiIn, mchiIn)/rholowerbound
-                fupperbound = nchiFunc(id, ierr, rupperbound, TchiIn, mchiIn)/rhoupperbound
+                flowerbound = n_chi(k+1)/density(k+1)
+                fupperbound = n_chi(k)/density(k)
             
-                integralIncrement = (mupperbound - mlowerbound)/2._dp * (flowerbound + fupperbound)
+                integralIncrement = (mass(k) - mass(k+1))/2.D0 * (flowerbound + fupperbound)
                 nchiCoeff = nchiCoeff + integralIncrement
-
-                index = index + 1
             end do
             
         end function nchiCoeff
