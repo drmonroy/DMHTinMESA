@@ -20,6 +20,7 @@ module energyFunction
 
             !energy transferred per unit stellar mass
             !in units of GeV/(g*s)
+            heat_transfer = 0.D0
             do k = 1, numzones
 
                 do j = 1, numspecies
@@ -27,14 +28,16 @@ module energyFunction
                     ((mchi * m_spec_GeV(j))/(mchi + m_spec_GeV(j))**2._dp) * &
                     n_chi(k) * n_spec(j,k) * sigma(j) * c_vac * kB * (TchiIn - Temp(k)) * &
                     SQRT(kb*Temp(k)/m_spec_GeV(j) + kb*TchiIn/mchi)
+
+                    heat_transfer(k) = heat_transfer(k) + N_DM/nchi_Integral * GeV2erg * energy_spec(j)
             
                 end do
                 
-                heat_transfer(k) = N_DM/nchi_Integral * GeV2erg * SUM(energy_spec)
+                
 
             end do
 
-            !energyFunc = 0.D0
+            heat_transfer = 0.D0
         end subroutine energyFunc
 
 end module energyFunction

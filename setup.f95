@@ -171,6 +171,7 @@ module setup
         !print*, "eta"
         !print*, eta
         
+        diffCap = 0.D0
         do k = 1, numzones
             
             do j = 1, numspecies
@@ -189,7 +190,7 @@ module setup
                 !print*, Apara, Aplus, Aminus
                 
                 diffCap_spec(j) = SQRT(6.D0/pi) * sigma(j) * n_spec(j,k) * dmDens * vbar * &
-                        (v_esc(k)/vbar)**2.D0 / (2.D0*eta*Apara2) * &
+                        muminus**2.D0 / (3.D0*eta*mu) * &
                         ( &
                             (Aplus*Aminus - 0.5D0) * &
                             (chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)) + &
@@ -197,13 +198,22 @@ module setup
                             0.5D0 * Aminus*EXP(-Aplus**2.D0) - &
                             eta * EXP(-eta2) &
                         )
-                !print*, "apara", mu/(muminus**2.D0)
-                !print*, "apara", 1.5D0*(v_esc(k)/vbar)**2.D0
+                diffCap(k) = diffCap(k) + diffCap_spec(j)
+                if (ISNAN(diffCap(k))) then
+                    print*, ( &
+                    (Aplus*Aminus - 0.5D0) * &
+                    (chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)) + &
+                    0.5D0 * Aplus*EXP(-Aminus**2.D0) - &
+                    0.5D0 * Aminus*EXP(-Aplus**2.D0) - &
+                    eta * EXP(-eta2) &
+                )
+                    exit
+                end if
             end do
-
-            diffCap(k) = SUM(diffCap_spec)
-            !print*, "diffCap", diffCap(k)
-
+            if (ISNAN(diffCap(k))) then
+                print*, "k, diffCap", k, diffCap(k)
+                exit
+            end if
         end do
 
         captureRate = 0.D0          
