@@ -71,7 +71,7 @@ module brent
                     else if (SIGN(1.0D0,fb) == -SIGN(1.0D0,fc)) then
                         findTchi = [b, fb, c, fc]
                     else
-                        print*, "---***--- ALL ZBRENT ROOTS HAVE THE SAME SIGN ---***---"
+                        ! print*, "---***--- ALL ZBRENT ROOTS HAVE THE SAME SIGN ---***---"
                         if (ABS(fa) < ABS(fc)) then
                             findTchi = [b, fb, a, fa]
                         else
@@ -225,6 +225,7 @@ module brent
             end do
 
             calculate_Tchi = Ttmp
+            !print*, "Tchi", calculate_Tchi
             
         end function calculate_Tchi
 

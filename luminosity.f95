@@ -16,9 +16,9 @@ module luminosity
 
             lumin_spec = 0.D0
 
-            do j = 1, numspecies-1
+            do j = 1, numspecies
             
-                do k = 1, numzones
+                do k = 1, numzones-1
 
                 !upper bound
                 tempFactor = kB * (Tchi - Temp(k)) * SQRT(kB * (Temp(k)/m_spec_GeV(j) - Tchi/mchi))

@@ -296,14 +296,11 @@
          if (ierr /= 0) return
 
          call set_vars(id,ierr)
-         print*, "numzones", numzones
-         print*, "star radius", radius(1)/(6.957D10)
-
          call energyFunc(calculate_Tchi())
 
          do k=1, numzones
             s% extra_heat(k) %val = heat_transfer(k) ! erg/g/sec
-            ! print*, "extra energy", s% extra_heat(k) %val
+            !print*, "extra energy", s% extra_heat(k) %val
          end do
          
          return

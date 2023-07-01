@@ -53,16 +53,17 @@ module setup
     real(dp) :: captureRate
     !potential energy, escape speed, gravitational g, differential capture rate, radius, mass, density, temperature
     !in: GeV, cm/s, cm/s^2, #/cc/s, cm, g, g/cc, K
-    real(dp), allocatable :: U(:), v_esc(:), g_value(:), diffCap(:), radius(:), mass(:), density(:), Temp(:)
+    real(dp) :: U(1:50000), v_esc(1:50000), g_value(1:50000), diffCap(1:50000)
+    real(dp) :: radius(1:50000), mass(1:50000), density(1:50000), Temp(1:50000)
     !number density of each species, at each point in the star
-    real(dp), allocatable :: n_spec(:,:)
+    real(dp) :: n_spec(1:50,1:50000)
     !mass in GeV, mass in g, x-sec w/DM in cm^2, and atomic number of each species
-    real(dp), allocatable :: m_spec_GeV(:), m_spec_g(:), sigma(:), A_spec(:)
+    real(dp) :: m_spec_GeV(1:50), m_spec_g(1:50), sigma(1:50), A_spec(1:50)
     
 
     !variable to store values per species
     !when calculating differential capture rate
-    real(dp), allocatable :: diffCap_spec(:)
+    real(dp) :: diffCap_spec(1:50)
     
 
 
@@ -84,13 +85,7 @@ module setup
         if (ierr /= 0) return
 
         numzones = starptr% nz
-        allocate(U(1:numzones),v_esc(1:numzones))
-        allocate(g_value(1:numzones),radius(1:numzones),mass(1:numzones),density(1:numzones),Temp(numzones))
-
         numspecies = starptr% species
-        allocate(m_spec_GeV(1:numspecies),m_spec_g(1:numspecies),sigma(1:numspecies),A_spec(1:numspecies))
-        allocate(n_spec(1:numspecies,1:numzones))
-        allocate(diffCap_spec(1:numspecies),diffCap(1:numzones))
 
         !star age in seconds
         starAge = starptr% star_age * 3.154D7
@@ -133,8 +128,7 @@ module setup
             v_esc(k+1) = v_esc(k) + intInc
             v_esc(k+1) = SQRT(v_esc(k+1)/(2*pi) + 2*radius(1)*g_value(1))
         end do
-        v_esc(1) = 2*radius(1)*g_value(1)
-
+        v_esc(1) = SQRT(2*radius(1)*g_value(1))
 
         !potential energy in GeV
         do k = 1, numzones
@@ -199,14 +193,16 @@ module setup
                         ( &
                             (Aplus*Aminus - 0.5D0) * &
                             (chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)) + &
-                            0.5_dp * Aplus*EXP(-Aminus**2.D0) - &
-                            0.5_dp * Aminus*EXP(-Aplus**2.D0) - &
+                            0.5D0 * Aplus*EXP(-Aminus**2.D0) - &
+                            0.5D0 * Aminus*EXP(-Aplus**2.D0) - &
                             eta * EXP(-eta2) &
                         )
-
+                !print*, "apara", mu/(muminus**2.D0)
+                !print*, "apara", 1.5D0*(v_esc(k)/vbar)**2.D0
             end do
 
             diffCap(k) = SUM(diffCap_spec)
+            !print*, "diffCap", diffCap(k)
 
         end do
 

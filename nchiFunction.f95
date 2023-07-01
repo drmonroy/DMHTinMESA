@@ -2,7 +2,7 @@ module nchiFunction
 
     use const_def, only: dp
     use setup
-    real(dp), allocatable :: n_chi(:)
+    real(dp) :: n_chi(1:50000)
     
     contains
 
@@ -10,8 +10,6 @@ module nchiFunction
                  
             real(dp), intent(in) :: TchiIn
             integer :: k
-            
-            allocate(n_chi(1:numzones))
 
             do k = 1, numzones
                 n_chi(k) = EXP(-U(k)/(kB * TchiIn))
