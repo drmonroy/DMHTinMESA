@@ -37,7 +37,7 @@ module energyFunction
 
             end do
 
-            heat_transfer = 0.D0
+            !heat_transfer = 0.D0
         end subroutine energyFunc
 
 end module energyFunction

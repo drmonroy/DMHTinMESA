@@ -27,11 +27,11 @@ module setup
     !Dark matter mass in GeV
     real(dp), parameter :: mchi = 10.D0
     !speed of sun relative to dark matter distribution in km/s
-    real(dp) :: vtilde = 220.D0
+    real(dp) :: vtilde = 220.D5
     !velocity dispersion of the dark matter in km/s
-    real(dp) :: vbar = 270.D0
-    !Dark matter density in GeV/cc
-    real(dp) :: dmDens = 0.4D0
+    real(dp) :: vbar = 270.D5
+    !Dark matter density in #/cc
+    real(dp) :: dmDens = 0.4D0/mchi
 
     !model number of star
     integer :: modelNum
@@ -64,8 +64,6 @@ module setup
     !variable to store values per species
     !when calculating differential capture rate
     real(dp) :: diffCap_spec(1:50)
-    
-
 
     contains
 
@@ -160,11 +158,6 @@ module setup
 
         !!!!!!!CALCULATE DIFFERENTIAL CAPTURE RATE!!!!!!!
 
-        !!!!CONVERSIONS!!!!
-        vtilde = vtilde * 1.D5 !in cm/s
-        vbar = vbar * 1.D5 !in cm/s
-        dmDens = dmDens/mchi !in #/cc
-
         !nondimensionalized version speed relative to dark matter
         eta2 = 1.5D0 * (vtilde/vbar)**2.D0
         eta = SQRT(eta2)
@@ -200,13 +193,10 @@ module setup
                         )
                 diffCap(k) = diffCap(k) + diffCap_spec(j)
                 if (ISNAN(diffCap(k))) then
-                    print*, ( &
-                    (Aplus*Aminus - 0.5D0) * &
-                    (chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)) + &
-                    0.5D0 * Aplus*EXP(-Aminus**2.D0) - &
-                    0.5D0 * Aminus*EXP(-Aplus**2.D0) - &
-                    eta * EXP(-eta2) &
-                )
+                    print*, (Aplus*Aminus - 0.5D0),(chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)), &
+                    Aplus*EXP(-Aminus**2.D0), &
+                    Aminus*EXP(-Aplus**2.D0), &
+                    eta, EXP(-eta2)
                     exit
                 end if
             end do
