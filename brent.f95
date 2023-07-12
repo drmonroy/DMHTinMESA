@@ -19,7 +19,8 @@ module brent
             b = x2
             fa = func(a)
             fb = func(b)
-    
+            !print*, "fa, fb", a,b
+
             if ((fa>0.D0 .and. fb>0.D0) .or. (fa<0.D0 .and. fb<0.D0)) then
                 print*, "Root must be bracketed!!"
                 print*, "fa", fa
@@ -27,8 +28,8 @@ module brent
 
                 open(2, file="temperature.dat")
                 write(2,*) "radius", "temperature"
-                do k = 1, numzones
-                    write(2,*) radius(k)/(6.957D10), Temp(k)
+                do k = 1, 100
+                    write(2,*) b/2.D0 + (k-1)*(a-b/2.D0)/99.D0, func(b/2.D0 + (k-1)*(a-b/2.D0)/99.D0)
                 end do
                 
                 findTchi = [-1.0D0, 0.0D0, 0.0D0, 0.0D0]
@@ -125,6 +126,7 @@ module brent
                 end if
                         
                 fb = func(b)
+                !print*, "fb2", b
                 
             end do
             
@@ -139,8 +141,8 @@ module brent
             real(dp), dimension(1:4) :: Tarray
             integer :: k, tries
             integer :: model_err = -1
-            logical :: Tflag = .false.
-            real(dp), parameter :: tol = 1.D-4
+            logical :: Tflag
+            real(dp), parameter :: tol = 1.D-8
             real(dp) :: lumin_upper, lumin_lower, slope
         
             ! if ((model_err == modelNum) .and. (.not. Tflag)) then
@@ -148,12 +150,12 @@ module brent
             ! end if
         
             Txhigh = maxT*1.1D0
-            Txlow = Temp(rchi_Index)
+            Txlow = 0.25D0*Temp(rchi_Index)
             Tflag=.false.
             tries=0
         
             do while (.not. Tflag)
-                tries = tries+1
+                tries = tries + 1
         
                 !returns -1 if root not bracketed
                 Tarray = findTchi(lumin, Txhigh, Txlow, tol)
@@ -198,6 +200,7 @@ module brent
                     
                     lumin_upper = lumin(Ttmp)
                     lumin_lower = lumin(0.999D0*Ttmp)
+                    !print*, "lumin upper/lower", Ttmp
                     slope = (lumin_upper - lumin_lower)/(0.001D0*Ttmp)
             
                     if (slope < 0.D0) then
@@ -214,8 +217,8 @@ module brent
                         ! The model_err variable (below) keeps track of this and will
                         ! kill the run if the step is not re-done, since this means
                         ! a suitable DM temperature was never found.  
-                        Ttmp= maxT
-                        model_err= modelNum +1
+                        Ttmp = maxT
+                        model_err = modelNum + 1
 
                         ! terminate the DO WHILE loop
                         exit
@@ -225,7 +228,7 @@ module brent
             end do
 
             calculate_Tchi = Ttmp
-            !print*, "Tchi", calculate_Tchi
+            print*, "Tchi", calculate_Tchi, "lumin", lumin(calculate_Tchi)
             
         end function calculate_Tchi
 

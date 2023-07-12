@@ -27,10 +27,7 @@ module nchiCoefficient
                 !print*, "function2", n_chi(k),density(k)
 
                 integralIncrement = (mass(k) - mass(k+1))/2.D0 * (flowerbound + fupperbound)
-                if (flowerbound + fupperbound > HUGE(x)) then
-                    print*, "inf error, k value:", k
-                    exit
-                end if
+
                 x = x + integralIncrement
 
             end do

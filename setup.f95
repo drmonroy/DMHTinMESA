@@ -21,6 +21,8 @@ module setup
     real(dp), parameter :: GeV2g = 1.783D-24
     !conversion from GeV to ergs
     real(dp), parameter :: GeV2erg = 1.602D-3
+    !conversion from g to solar masses
+    real(dp), parameter :: g2Msol = 1.988D33
 
     !proton-DM cross section in cm^2
     real(dp), parameter :: sigma_p = 1.D-43
@@ -32,6 +34,9 @@ module setup
     real(dp) :: vbar = 270.D5
     !Dark matter density in #/cc
     real(dp) :: dmDens = 0.4D0/mchi
+
+    !whether the calculation is spin-dependent or not
+    logical :: spindep = .true.
 
     !model number of star
     integer :: modelNum
@@ -54,16 +59,18 @@ module setup
     !potential energy, escape speed, gravitational g, differential capture rate, radius, mass, density, temperature
     !in: GeV, cm/s, cm/s^2, #/cc/s, cm, g, g/cc, K
     real(dp) :: U(1:50000), v_esc(1:50000), g_value(1:50000), diffCap(1:50000)
-    real(dp) :: radius(1:50000), mass(1:50000), density(1:50000), Temp(1:50000)
+    real(dp) :: radius(1:50000), mass(1:50000), density(1:50000), Temp(1:50000), n_H(1:50000)
     !number density of each species, at each point in the star
     real(dp) :: n_spec(1:50,1:50000)
     !mass in GeV, mass in g, x-sec w/DM in cm^2, and atomic number of each species
     real(dp) :: m_spec_GeV(1:50), m_spec_g(1:50), sigma(1:50), A_spec(1:50)
-    
 
     !variable to store values per species
     !when calculating differential capture rate
     real(dp) :: diffCap_spec(1:50)
+
+    !variable to store data in star pointer
+    real(dp) :: X_CTRL(1:10)
 
     contains
 
@@ -101,6 +108,7 @@ module setup
             ! the temperature at each cell in K
             Temp(k) = starptr% T(k)
         end do
+
 
         !model number of star
         modelNum = starptr% model_number
@@ -144,8 +152,14 @@ module setup
             !atomic # of species j
             A_spec(j) = chem_isos% Z_plus_N(chemj)
             !cross section with dark matter in cm^2
-            !check against Troy w/spin-dependent case
-            sigma(j) = sigma_p * (A_spec(j) * m_spec_GeV(j)/m_prot * (mchi + m_prot)/(mchi + m_spec_GeV(j)))**2
+            
+            if (chem_isos% Z_plus_N(chemj) == 1) then
+                
+            else
+    
+                sigma(j) = sigma_p * (A_spec(j) * m_spec_GeV(j)/m_prot * (mchi + m_prot)/(mchi + m_spec_GeV(j)))**2
+
+            end if
             
             do k = 1, numzones
                 !mass fraction of each species at each point in the star
@@ -155,68 +169,77 @@ module setup
             end do
         end do
 
-
-        !!!!!!!CALCULATE DIFFERENTIAL CAPTURE RATE!!!!!!!
-
-        !nondimensionalized version speed relative to dark matter
-        eta2 = 1.5D0 * (vtilde/vbar)**2.D0
-        eta = SQRT(eta2)
-        !print*, "eta"
-        !print*, eta
-        
-        diffCap = 0.D0
         do k = 1, numzones
+            !mass fraction of hydrogen at each point in the star
+            n_H(k) = starptr% X(k)
+            !number density of hydrogen at each point in the star
+            n_H(k) = n_H(k) * starptr% rho(k) / m_prot
+        end do
+
+
+        !!!!!!!CALCULATE CAPTURE RATE!!!!!!!
+
+        if (.not. spindep) then
+
+            !nondimensionalized version of speed relative to dark matter
+            eta2 = 1.5D0 * (vtilde/vbar)**2.D0
+            eta = SQRT(eta2)
+            !print*, "eta"
+            !print*, eta
+
+            diffCap = 0.D0
+            do k = 1, numzones
+                    
+                do j = 1, numspecies
+
+                    if (A_spec(j) == 1) then
+
+                    else
             
-            do j = 1, numspecies
-          
-                !unitless parameters for masses
-                mu = m_spec_GeV(j)/mchi
-                muminus = (mu - 1.D0)/2.D0
-                !print*, "mu, mu+, mu-"
-                !print*, mu, muplus, muminus
+                        !unitless parameters for masses
+                        mu = m_spec_GeV(j)/mchi
+                        muminus = (mu - 1.D0)/2.D0
+                        !print*, "mu, mu+, mu-"
+                        !print*, mu, muplus, muminus
 
-                Apara2 = (1.5D0*(v_esc(k)/vbar)**2.D0) * mu/(muminus**2.D0)
-                Apara = SQRT(Apara2)
-                Aplus = Apara + eta
-                Aminus = Apara - eta
-                !print*, "A, A+, A-"
-                !print*, Apara, Aplus, Aminus
-                
-                diffCap_spec(j) = SQRT(6.D0/pi) * sigma(j) * n_spec(j,k) * dmDens * vbar * &
-                        muminus**2.D0 / (3.D0*eta*mu) * &
-                        ( &
-                            (Aplus*Aminus - 0.5D0) * &
-                            (chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)) + &
-                            0.5D0 * Aplus*EXP(-Aminus**2.D0) - &
-                            0.5D0 * Aminus*EXP(-Aplus**2.D0) - &
-                            eta * EXP(-eta2) &
-                        )
-                diffCap(k) = diffCap(k) + diffCap_spec(j)
-                if (ISNAN(diffCap(k))) then
-                    print*, (Aplus*Aminus - 0.5D0),(chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)), &
-                    Aplus*EXP(-Aminus**2.D0), &
-                    Aminus*EXP(-Aplus**2.D0), &
-                    eta, EXP(-eta2)
-                    exit
-                end if
+                        Apara2 = (1.5D0*(v_esc(k)/vbar)**2.D0) * mu/(muminus**2.D0)
+                        Apara = SQRT(Apara2)
+                        Aplus = Apara + eta
+                        Aminus = Apara - eta
+                        !print*, "A, A+, A-"
+                        !print*, Apara, Aplus, Aminus
+                        
+                        diffCap_spec(j) = SQRT(6.D0/pi) * sigma(j) * n_spec(j,k) * dmDens * vbar * &
+                                muminus**2.D0 / (3.D0*eta*mu) * &
+                                ( &
+                                    (Aplus*Aminus - 0.5D0) * &
+                                    (chiFunc(-eta,eta) - chiFunc(Aminus,Aplus)) + &
+                                    0.5D0 * Aplus*EXP(-Aminus**2.D0) - &
+                                    0.5D0 * Aminus*EXP(-Aplus**2.D0) - &
+                                    eta * EXP(-eta2) &
+                                )
+                        diffCap(k) = diffCap(k) + diffCap_spec(j)
+                    
+                    end if
+
+                end do
+
             end do
-            if (ISNAN(diffCap(k))) then
-                print*, "k, diffCap", k, diffCap(k)
-                exit
-            end if
-        end do
 
-        captureRate = 0.D0          
+            captureRate = 0.D0          
 
-        do k = 1, numzones-1
+            do k = 1, numzones-1
 
-            fupper = diffCap(k)/density(k)
-            flower = diffCap(k+1)/density(k+1)
+                fupper = diffCap(k)/density(k)
+                flower = diffCap(k+1)/density(k+1)
 
-            intInc = (mass(k) - mass(k+1)) * (flower + fupper) / 2.D0
-            captureRate = captureRate + intInc
+                intInc = (mass(k) - mass(k+1)) * (flower + fupper) / 2.D0
+                captureRate = captureRate + intInc
 
-        end do
+            end do
+        else
+            captureRate = 25.D21 * (dmDens/0.4D0) * (sigma_p/1.D-43) * (v_esc(1)/618.D5) * (270.D5/vbar) * (mass(1)/g2Msol)
+        end if
 
     end subroutine set_vars
 

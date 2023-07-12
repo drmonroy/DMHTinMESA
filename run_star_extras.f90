@@ -131,7 +131,7 @@
          ierr = 0
          call star_ptr(id, s, ierr)
          if (ierr /= 0) return
-         how_many_extra_history_columns = 0
+         how_many_extra_history_columns = 1
       end function how_many_extra_history_columns
       
       
@@ -148,6 +148,9 @@
          ! note: do NOT add the extras names to history_columns.list
          ! the history_columns.list is only for the built-in history column options.
          ! it must not include the new column names you are adding here.
+
+         names(1) = "DM_Temp"
+         vals(1) = s% X_CTRL(1)
          
 
       end subroutine data_for_extra_history_columns
@@ -296,6 +299,7 @@
          if (ierr /= 0) return
 
          call set_vars(id,ierr)
+         s% X_CTRL(1) = calculate_Tchi()
          call energyFunc(calculate_Tchi())
 
          do k=1, numzones
