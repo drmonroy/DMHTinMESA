@@ -31,13 +31,13 @@ module luminosity
                         else
 
                             !upper bound
-                            tempFactor = kB * (TchiIn - Temp(k)) * SQRT(kB * (Temp(k)/m_spec_GeV(j) + TchiIn/mchi))
+                            tempFactor = kB * (Temp(k) - TchiIn) * SQRT(kB * (Temp(k)/m_spec_GeV(j) + TchiIn/mchi))
                             interaction = EXP(-U(k)/(kB * TchiIn)) * n_spec(j,k) * sigma(j)
                             massFactor = (mchi * m_spec_GeV(j))/(mchi + m_spec_GeV(j))**2._dp
                             fupperbound = massFactor * tempFactor * interaction /  density(k)
 
                             !lower bound
-                            tempFactor = kB * (TchiIn - Temp(k+1)) * SQRT(kB * (Temp(k+1)/m_spec_GeV(j) + TchiIn/mchi))
+                            tempFactor = kB * (Temp(k+1) - TchiIn) * SQRT(kB * (Temp(k+1)/m_spec_GeV(j) + TchiIn/mchi))
                             interaction = EXP(-U(k+1)/(kB * TchiIn)) * n_spec(j,k+1) * sigma(j)
                             massFactor = (mchi * m_spec_GeV(j))/(mchi + m_spec_GeV(j))**2._dp
                             flowerbound = massFactor * tempFactor * interaction /  density(k+1)
@@ -60,14 +60,14 @@ module luminosity
                 do k = 1, numzones - 1
 
                     !upper bound
-                    tempFactor = kB * (TchiIn - Temp(k)) * SQRT(kB * (Temp(k)/m_prot + TchiIn/mchi))
+                    tempFactor = kB * (Temp(k) - TchiIn) * SQRT(kB * (Temp(k)/m_prot + TchiIn/mchi))
                     interaction = EXP(-U(k)/(kB * TchiIn)) * n_H(k) * sigma_p
                     massFactor = (mchi * m_prot)/(mchi + m_prot)**2._dp
                     fupperbound = massFactor * tempFactor * interaction /  density(k)
                     !print*, "Tfact", TchiIn
 
                     !lower bound
-                    tempFactor = kB * (TchiIn - Temp(k+1)) * SQRT(kB * (Temp(k+1)/m_prot + TchiIn/mchi))
+                    tempFactor = kB * (Temp(k+1) - TchiIn) * SQRT(kB * (Temp(k+1)/m_prot + TchiIn/mchi))
                     interaction = EXP(-U(k+1)/(kB * TchiIn)) * n_H(k+1) * sigma_p
                     massFactor = (mchi * m_prot)/(mchi + m_prot)**2._dp
                     flowerbound = massFactor * tempFactor * interaction /  density(k+1)

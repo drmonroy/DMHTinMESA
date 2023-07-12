@@ -23,14 +23,14 @@ module brent
 
             if ((fa>0.D0 .and. fb>0.D0) .or. (fa<0.D0 .and. fb<0.D0)) then
                 print*, "Root must be bracketed!!"
-                print*, "fa", fa
-                print*, "fb", fb
+                print*, "a", "fa", a, fa
+                print*, "b", "fb", b, fb 
 
-                open(2, file="temperature.dat")
-                write(2,*) "radius", "temperature"
-                do k = 1, 100
-                    write(2,*) b/2.D0 + (k-1)*(a-b/2.D0)/99.D0, func(b/2.D0 + (k-1)*(a-b/2.D0)/99.D0)
-                end do
+                ! open(2, file="temperature.dat")
+                ! write(2,*) "temperature \t luminosity"
+                ! do k = 1, 100
+                !     write(2,*) b/2.D0 + (k-1)*(a-b/2.D0)/99.D0, func(b/2.D0 + (k-1)*(a-b/2.D0)/99.D0)
+                ! end do
                 
                 findTchi = [-1.0D0, 0.0D0, 0.0D0, 0.0D0]
                 return
@@ -150,7 +150,7 @@ module brent
             ! end if
         
             Txhigh = maxT*1.1D0
-            Txlow = 0.25D0*Temp(rchi_Index)
+            Txlow = Temp(rchi_Index)/8.D0
             Tflag=.false.
             tries=0
         
@@ -164,6 +164,7 @@ module brent
                 !treat as root not bracketed
                 !Tx close to Tmax and slope is shallow (most likely)
                 if (Txlow > maxT) then
+                    !print*, "Txlow>matxT", Txlow, maxT
                     Ttmp = -1.0D0
                 end if
         
@@ -174,11 +175,14 @@ module brent
                     slope = (lumin_upper - lumin_lower)/(0.001D0*Ttmp)
             
                     if (slope < 0.D0) then
-                       Tflag = .TRUE.
+                        !print*, "slope negative", slope
+                        Tflag = .TRUE.
                     else
+                        !print*, "slope positive", slope
                         Tflag = .FALSE.
                     end if
 
+                    !if slope positive
                     !expand the range and try again
                     Txlow = 1.05D0*Txlow
                 
@@ -189,23 +193,27 @@ module brent
                     !expand range and try again
                     Txlow = Txlow/2.0
                     Txhigh = Txhigh*1.25
+                    !print*, "root bracket error, first try"
                 
                 else
                     !if root bracket error,
                     !and this is not the first try,
                     !go back a step, find root, make sure slope is negative
+                    
+                    !print*, "expand range and try again"
                     Txlow = Txlow/1.05
                     Tarray = findTchi(lumin, Txhigh, Txlow, tol)
                     Ttmp = Tarray(1)
                     
                     lumin_upper = lumin(Ttmp)
                     lumin_lower = lumin(0.999D0*Ttmp)
-                    !print*, "lumin upper/lower", Ttmp
                     slope = (lumin_upper - lumin_lower)/(0.001D0*Ttmp)
             
                     if (slope < 0.D0) then
-                       Tflag = .TRUE.
+                        !print*, "slope negative", slope
+                        Tflag = .TRUE.
                     else
+                        !print*, "slope positive", slope
                         Tflag = .FALSE.
                     end if
                     
@@ -219,7 +227,7 @@ module brent
                         ! a suitable DM temperature was never found.  
                         Ttmp = maxT
                         model_err = modelNum + 1
-
+                        print*, "this ain't workin"
                         ! terminate the DO WHILE loop
                         exit
 
@@ -228,7 +236,7 @@ module brent
             end do
 
             calculate_Tchi = Ttmp
-            print*, "Tchi", calculate_Tchi, "lumin", lumin(calculate_Tchi)
+            !print*, "Tchi", calculate_Tchi, "lumin", lumin(calculate_Tchi)
             
         end function calculate_Tchi
 
