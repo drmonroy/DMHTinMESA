@@ -44,7 +44,7 @@ module energyFunction
                 end do
             else
 
-                do k = 1, numspecies
+                do k = 1, numzones
                     heat_transfer(k) = 8._dp/density(k) * SQRT(2._dp/pi) * & 
                     ((mchi * m_prot)/(mchi + m_prot)**2._dp) * &
                     n_chi(k) * n_H(k) * sigma_p * c_vac * kB * (TchiIn - Temp(k)) * &
