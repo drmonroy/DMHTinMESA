@@ -163,7 +163,7 @@
          ierr = 0
          call star_ptr(id, s, ierr)
          if (ierr /= 0) return
-         how_many_extra_profile_columns = 2
+         how_many_extra_profile_columns = 5
       end function how_many_extra_profile_columns
       
       
@@ -187,15 +187,20 @@
 
          ! here is an example for adding a profile column
          !if (n /= 1) stop 'data_for_extra_profile_columns'
+
+         call nchiFunc(s%X_CTRL(1))
+         
          names(1) = 'extra_heat'
+         names(2) = 'DM_dens'
+         names(3) = 'escape speed'
+         names(4) = 'potential'
+         names(5) = 'H # density'
          do k = 1, nz
             vals(k,1) = s% extra_heat(k) %val
-         end do
-
-         names(2) = 'DM_dens'
-         call nchiFunc(calculate_Tchi())
-         do k = 1, nz
             vals(k,2) = n_chi(k)
+            vals(k,3) = v_esc(k)
+            vals(k,4) = U(k)
+            vals(k,5) = n_H(k)
          end do
          
       end subroutine data_for_extra_profile_columns
@@ -308,7 +313,8 @@
 
          call set_vars(id,ierr)
          s% X_CTRL(1) = calculate_Tchi()
-         call energyFunc(calculate_Tchi())
+         call energyFunc(s%X_CTRL(1))
+         print*,"DM_temp", s%X_CTRL(1)
          print*, "N_DM", N_DM
 
          do k=1, numzones
