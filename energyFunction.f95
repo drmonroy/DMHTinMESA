@@ -5,6 +5,7 @@ module energyFunction
     use nchiCoefficient
 
     real(dp) :: heat_transfer(1:50000)
+    real(dp) :: nchi_Integral, N_DM
 
     contains
 
@@ -12,7 +13,6 @@ module energyFunction
             
             real(dp) :: energy_spec(1:numspecies)
             real(dp), intent(in) :: TchiIn
-            real(dp) :: nchi_Integral, N_DM
 
             nchi_Integral = nchiCoeff(TchiIn)
             N_DM = captureRate * starAge

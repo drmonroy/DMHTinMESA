@@ -25,7 +25,7 @@ module setup
     real(dp), parameter :: g2Msol = 1.988D33
 
     !proton-DM cross section in cm^2
-    real(dp), parameter :: sigma_p = 1.D-43
+    real(dp), parameter :: sigma_p = 1.D-37
     !Dark matter mass in GeV
     real(dp), parameter :: mchi = 10.D0
     !speed of sun relative to dark matter distribution in km/s
@@ -124,7 +124,7 @@ module setup
         !maximum temperature in K (of what, though?)
         maxT = 10.D0**(starptr% log_max_temperature)
 
-        !escape speed in cm/s
+        !(escape speed squared - surface escape speed squared) in cm^2/s^2
         v_esc(1) = 0.D0
         do k = 1, numzones-1
             flower = g_value(k+1)/(radius(k+1)**2 * density(k+1))
@@ -132,9 +132,12 @@ module setup
 
             intInc = (mass(k) - mass(k+1))/2._dp * (flower + fupper)
             v_esc(k+1) = v_esc(k) + intInc
-            v_esc(k+1) = SQRT(v_esc(k+1)/(2*pi) + 2*radius(1)*g_value(1))
         end do
-        v_esc(1) = SQRT(2*radius(1)*g_value(1))
+
+        !escape speed in cm/s
+        do k = 1, numzones
+            v_esc(k) = SQRT(v_esc(k) + 2.D0 * radius(1)*g_value(1))
+        end do
 
         !potential energy in GeV
         do k = 1, numzones

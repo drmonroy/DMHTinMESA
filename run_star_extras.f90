@@ -163,11 +163,13 @@
          ierr = 0
          call star_ptr(id, s, ierr)
          if (ierr /= 0) return
-         how_many_extra_profile_columns = 1
+         how_many_extra_profile_columns = 2
       end function how_many_extra_profile_columns
       
       
       subroutine data_for_extra_profile_columns(id, n, nz, names, vals, ierr)
+         use nchiFunction
+         use brent
          integer, intent(in) :: id, n, nz
          character (len=maxlen_profile_column_name) :: names(n)
          real(dp) :: vals(nz,n)
@@ -188,6 +190,12 @@
          names(1) = 'extra_heat'
          do k = 1, nz
             vals(k,1) = s% extra_heat(k) %val
+         end do
+
+         names(2) = 'DM_dens'
+         call nchiFunc(calculate_Tchi())
+         do k = 1, nz
+            vals(k,2) = n_chi(k)
          end do
          
       end subroutine data_for_extra_profile_columns
@@ -301,6 +309,7 @@
          call set_vars(id,ierr)
          s% X_CTRL(1) = calculate_Tchi()
          call energyFunc(calculate_Tchi())
+         print*, "N_DM", N_DM
 
          do k=1, numzones
             s% extra_heat(k) %val = heat_transfer(k) ! erg/g/sec
