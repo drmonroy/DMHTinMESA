@@ -30,8 +30,8 @@ module energyFunction
                         
                         else
 
-                            energy_spec(j) = 8._dp/density(k) * SQRT(2._dp/pi) * & 
-                            ((mchi * m_spec_GeV(j))/(mchi + m_spec_GeV(j))**2._dp) * &
+                            energy_spec(j) = 8.D0/density(k) * SQRT(2.D0/pi) * & 
+                            ((mchi * m_spec_GeV(j))/(mchi + m_spec_GeV(j))**2.D0) * &
                             n_chi(k) * n_spec(j,k) * sigma(j) * c_vac * kB * (TchiIn - Temp(k)) * &
                             SQRT(kb*Temp(k)/m_spec_GeV(j) + kb*TchiIn/mchi)
 
@@ -45,13 +45,14 @@ module energyFunction
             else
 
                 do k = 1, numzones
-                    heat_transfer(k) = 8._dp/density(k) * SQRT(2._dp/pi) * & 
-                    ((mchi * m_prot)/(mchi + m_prot)**2._dp) * &
+                    heat_transfer(k) = 8.D0/density(k) * SQRT(2.D0/pi) * & 
+                    ((mchi * m_prot)/(mchi + m_prot)**2.D0) * &
                     n_chi(k) * n_H(k) * sigma_p * c_vac * kB * (TchiIn - Temp(k)) * &
                     SQRT(kb*Temp(k)/m_prot + kb*TchiIn/mchi)
 
                     heat_transfer(k) = heat_transfer(k) * N_DM/nchi_Integral * GeV2erg
                 end do
+
             end if
 
             !heat_transfer = 0.D0
