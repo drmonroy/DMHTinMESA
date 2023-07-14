@@ -21,16 +21,16 @@ module brent
             fb = func(b)
             !print*, "fa, fb", a,b
 
+            open(2, file="temperature.dat")
+            write(2,*) "temperature \t luminosity"
+            do k = 1, 100
+                write(2,*) b/2.D0 + (k-1)*(a-b/2.D0)/99.D0, func(b/2.D0 + (k-1)*(a-b/2.D0)/99.D0)
+            end do
+
             if ((fa>0.D0 .and. fb>0.D0) .or. (fa<0.D0 .and. fb<0.D0)) then
                 print*, "Root must be bracketed!!"
                 print*, "a", "fa", a, fa
-                print*, "b", "fb", b, fb 
-
-                ! open(2, file="temperature.dat")
-                ! write(2,*) "temperature \t luminosity"
-                ! do k = 1, 100
-                !     write(2,*) b/2.D0 + (k-1)*(a-b/2.D0)/99.D0, func(b/2.D0 + (k-1)*(a-b/2.D0)/99.D0)
-                ! end do
+                print*, "b", "fb", b, fb
                 
                 findTchi = [-1.0D0, 0.0D0, 0.0D0, 0.0D0]
                 return
@@ -236,7 +236,7 @@ module brent
             end do
 
             calculate_Tchi = Ttmp
-            !print*, "Tchi", calculate_Tchi, "lumin", lumin(calculate_Tchi)
+            print*, "Tchi", calculate_Tchi, "lumin", lumin(calculate_Tchi)
             
         end function calculate_Tchi
 
