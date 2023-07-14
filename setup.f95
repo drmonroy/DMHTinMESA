@@ -9,7 +9,7 @@ module setup
     real(dp), parameter :: pi = 4.D0*ATAN(1.D0)
     !Speed of light in a vacuum in cm/s
     real(dp), parameter :: c_vac = 2.99792D10
-    !Newtonian gravitational constant in cm^3/g/s^2
+    !Newtonian gravitational constant in cc/g/s^2
     real(dp), parameter :: G_newt = 6.674D-8 
     !boltzmann constant in GeV/K
     real(dp), parameter :: kB = 8.617D-14
@@ -50,8 +50,12 @@ module setup
     real(dp) :: starAge
     !characteristic radius of the dark matter in cm
     real(dp) :: rchi
+    !2.5 times the characteristic radius of the dark matter in cm
+    real(dp) :: rchiTimes2point5
     !cell number of the characteristic radius
     integer :: rchi_Index
+    !cell number of 2.5 times the characteristic radius
+    integer :: rchi2point5_Index
     !max temperature? maximum of what?
     real(dp) :: maxT
     !total integrated capture rate
@@ -115,10 +119,16 @@ module setup
 
         !characteristic radius of dark matter in cm
         rchi = SQRT(3*kB*Temp(numzones)*c_vac**2/(2*pi*G_newt*density(numzones)*mchi))
+        rchiTimes2point5 = 2.5D0 * rchi
 
         rchi_Index = 1
         do while (radius(rchi_Index) > rchi)
             rchi_Index = rchi_Index + 1
+        end do
+
+        rchi2point5_Index = 1
+        do while (radius(rchi2point5_Index) > rchiTimes2point5)
+            rchi2point5_Index = rchi2point5_Index + 1
         end do
 
         !maximum temperature in K (of what, though?)
@@ -136,7 +146,7 @@ module setup
 
         !escape speed in cm/s
         do k = 1, numzones
-            v_esc(k) = SQRT(v_esc(k) + 2.D0 * radius(1)*g_value(1))
+            v_esc(k) = SQRT(v_esc(k) + 2.D0*radius(1)*g_value(1))
         end do
 
         !potential energy in GeV
