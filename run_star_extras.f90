@@ -131,11 +131,12 @@
          ierr = 0
          call star_ptr(id, s, ierr)
          if (ierr /= 0) return
-         how_many_extra_history_columns = 1
+         how_many_extra_history_columns = 5
       end function how_many_extra_history_columns
       
       
       subroutine data_for_extra_history_columns(id, n, names, vals, ierr)
+         use setup
          integer, intent(in) :: id, n
          character (len=maxlen_history_column_name) :: names(n)
          real(dp) :: vals(n)
@@ -150,7 +151,17 @@
          ! it must not include the new column names you are adding here.
 
          names(1) = "DM_Temp"
+         names(2) = "N_DM"
+         names(3) = "rchi_Mass"
+         names(4) = "rchi_Temp"
+         names(5) = "(2.5*rchi)_Temp"
+
          vals(1) = s% X_CTRL(1)
+         vals(2) = s% X_CTRL(2)
+         vals(3) = mass(rchi_Index)
+         vals(4) = Temp(rchi_Index)
+         vals(5) = Temp(rchi2point5_Index)
+
          
 
       end subroutine data_for_extra_history_columns
@@ -168,7 +179,7 @@
       
       
       subroutine data_for_extra_profile_columns(id, n, nz, names, vals, ierr)
-         use nchiFunction
+         use nchiCoefficient
          use brent
          integer, intent(in) :: id, n, nz
          character (len=maxlen_profile_column_name) :: names(n)
@@ -192,12 +203,12 @@
          
          names(1) = 'extra_heat'
          names(2) = 'DM_dens'
-         names(3) = 'escape speed'
+         names(3) = 'escape_speed'
          names(4) = 'potential'
-         names(5) = 'H # density'
+         names(5) = 'H_#_density'
          do k = 1, nz
             vals(k,1) = s% extra_heat(k) %val
-            vals(k,2) = n_chi(k)
+            vals(k,2) = n_chi(k)*captureRate*starAge/nchiCoeff(s%X_CTRL(1))
             vals(k,3) = v_esc(k)
             vals(k,4) = U(k)
             vals(k,5) = n_H(k)
@@ -314,8 +325,9 @@
          call set_vars(id,ierr)
          s% X_CTRL(1) = calculate_Tchi()
          call energyFunc(s%X_CTRL(1))
+         s% X_CTRL(2) = N_DM
          print*,"DM_temp", s%X_CTRL(1)
-         print*, "N_DM", N_DM
+         print*, "N_DM", s%X_CTRL(2)
 
          do k=1, numzones
             s% extra_heat(k) %val = heat_transfer(k) ! erg/g/sec
