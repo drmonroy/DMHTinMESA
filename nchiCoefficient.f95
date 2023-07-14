@@ -32,6 +32,7 @@ module nchiCoefficient
 
             end do
             nchiCoeff = x
+            !print*, "nchiCoeff", nchiCoeff
             
         end function nchiCoeff
 
