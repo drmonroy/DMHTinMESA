@@ -61,16 +61,14 @@ module luminosity
 
                     !upper bound
                     tempFactor = kB * (Temp(k) - TchiIn) * SQRT(kB * (Temp(k)/m_prot + TchiIn/mchi))
-                    interaction = EXP(-U(k)/(kB * TchiIn)) * n_H(k) * sigma_p
-                    massFactor = (mchi * m_prot)/(mchi + m_prot)**2._dp
-                    fupperbound = massFactor * tempFactor * interaction /  density(k)
+                    interaction = EXP(-U(k)/(kB * TchiIn)) * n_H(k)
+                    fupperbound = tempFactor * interaction /  density(k)
                     !print*, "Tfact", TchiIn
 
                     !lower bound
                     tempFactor = kB * (Temp(k+1) - TchiIn) * SQRT(kB * (Temp(k+1)/m_prot + TchiIn/mchi))
-                    interaction = EXP(-U(k+1)/(kB * TchiIn)) * n_H(k+1) * sigma_p
-                    massFactor = (mchi * m_prot)/(mchi + m_prot)**2._dp
-                    flowerbound = massFactor * tempFactor * interaction /  density(k+1)
+                    interaction = EXP(-U(k+1)/(kB * TchiIn)) * n_H(k+1)
+                    flowerbound = tempFactor * interaction /  density(k+1)
 
                     !calculate integral
                     integralIncrement = (mass(k) - mass(k+1)) * (flowerbound + fupperbound)/2.D0
