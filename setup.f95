@@ -21,8 +21,8 @@ module setup
     real(dp), parameter :: GeV2g = 1.783D-24
     !conversion from GeV to ergs
     real(dp), parameter :: GeV2erg = 1.602D-3
-    !conversion from g to solar masses
-    real(dp), parameter :: g2Msol = 1.988D33
+    !conversion from solar masses to g
+    real(dp), parameter :: Msol2g = 1.988D33
 
     !proton-DM cross section in cm^2
     real(dp), parameter :: sigma_p = 1.D-37
@@ -60,6 +60,13 @@ module setup
     real(dp) :: maxT
     !total integrated capture rate
     real(dp) :: captureRate
+    !length of timestep mesa uses in s
+    real(dp) :: timestep
+    !number of DM particles captured in last timestep
+    real(dp) :: dN_DM
+    !total number of DM particles captured so far
+    real(dp) :: N_DM = 0
+
     !potential energy, escape speed, gravitational g, differential capture rate, radius, mass, density, temperature
     !in: GeV, cm/s, cm/s^2, #/cc/s, cm, g, g/cc, K
     real(dp) :: U(1:50000), v_esc(1:50000), g_value(1:50000), diffCap(1:50000)
@@ -73,8 +80,9 @@ module setup
     !when calculating differential capture rate
     real(dp) :: diffCap_spec(1:50)
 
-    !variable to store data in star pointer
+    !variables to store data in star pointer
     real(dp) :: X_CTRL(1:10)
+    real(dp) :: xtra(1:5) = 0.D0
 
     contains
 
@@ -98,6 +106,8 @@ module setup
 
         !star age in seconds
         starAge = starptr% star_age * 3.154D7
+        !time step in seconds
+        timestep = starptr% dt
 
         do k = 1, numzones
             ! what the hell is this? apparently in cm/s^2
@@ -140,7 +150,7 @@ module setup
             flower = g_value(k+1)/(radius(k+1)**2 * density(k+1))
             fupper = g_value(k)/(radius(k)**2 * density(k))
 
-            intInc = (mass(k) - mass(k+1))/2._dp * (flower + fupper)
+            intInc = (mass(k) - mass(k+1))/2.D0 * (flower + fupper)
             v_esc(k+1) = v_esc(k) + intInc
         end do
 
@@ -178,7 +188,7 @@ module setup
                 !mass fraction of each species at each point in the star
                 n_spec(j,k) = starptr% xa(j,k)
                 !number density of each species at each point in star
-                n_spec(j,k) = n_spec(j,k) * starptr% rho(k) / m_spec_g(j)
+                n_spec(j,k) = n_spec(j,k) * density(k) / m_spec_g(j)
             end do
         end do
 
@@ -186,7 +196,7 @@ module setup
             !mass fraction of hydrogen at each point in the star
             n_H(k) = starptr% X(k)
             !number density of hydrogen at each point in the star
-            n_H(k) = n_H(k) * starptr% rho(k) / m_prot
+            n_H(k) = n_H(k) * density(k) / (m_prot*GeV2g)
         end do
 
 
@@ -251,8 +261,17 @@ module setup
 
             end do
         else
-            captureRate = 25.D21 * (dmDens/0.4D0) * (sigma_p/1.D-43) * (v_esc(1)/618.D5) * (270.D5/vbar) * (mass(1)/g2Msol)
+            captureRate = &
+                    5.D21 * (5.D0/mchi) * (dmDens*mchi/0.4D0) * (sigma_p/1.D-43) * &
+                    (v_esc(1)/618.D5)**2 * (270.D5/vbar) * (mass(1)/Msol2g)
+
         end if
+
+        dN_DM = captureRate * timestep
+	    N_DM = starptr% xtra(1) + dN_DM
+	    starptr% xtra(2) = N_DM
+
+        print*, "dN_DM", dN_DM
 
     end subroutine set_vars
 

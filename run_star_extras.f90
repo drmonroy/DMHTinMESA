@@ -287,14 +287,11 @@
          if (ierr /= 0) return
          extras_finish_step = keep_going
 
-         ! to save a profile, 
-            ! s% need_to_save_profiles_now = .true.
-         ! to update the star log,
-            ! s% need_to_update_history_now = .true.
+         s% xtra(1) = s% xtra(2)  !! = Nx (so DM is not collected when step is not accepted)
+         ! print*, "*******************************************"
+         ! print*, "*****              TEST               *****"
+         ! print*, "*******************************************"
 
-         ! see extras_check_model for information about custom termination codes
-         ! by default, indicate where (in the code) MESA terminated
-         if (extras_finish_step == terminate) s% termination_code = t_extras_finish_step
       end function extras_finish_step
       
       
@@ -327,9 +324,8 @@
          call set_vars(id,ierr)
          s% X_CTRL(1) = calculate_Tchi()
          call energyFunc(s%X_CTRL(1))
-         s% X_CTRL(2) = N_DM
          print*,"DM_temp", s%X_CTRL(1)
-         print*, "N_DM", s%X_CTRL(2)
+         print*, "N_DM", s% xtra(2)
 
          do k=1, numzones
             s% extra_heat(k) %val = heat_transfer(k) ! erg/g/sec
