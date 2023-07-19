@@ -131,7 +131,7 @@
          ierr = 0
          call star_ptr(id, s, ierr)
          if (ierr /= 0) return
-         how_many_extra_history_columns = 5
+         how_many_extra_history_columns = 6
       end function how_many_extra_history_columns
       
       
@@ -152,15 +152,17 @@
 
          names(1) = "DM_Temp"
          names(2) = "N_DM"
-         names(3) = "rchi_Mass"
-         names(4) = "rchi_Temp"
-         names(5) = "(2.5*rchi)_Temp"
+         names(3) = "rchi"
+         names(4) = "rchi_Mass"
+         names(5) = "rchi_Temp"
+         names(6) = "(2.5*rchi)_Temp"
 
          vals(1) = s% X_CTRL(1)
          vals(2) = s% X_CTRL(2)
-         vals(3) = mass(rchi_Index)
-         vals(4) = Temp(rchi_Index)
-         vals(5) = Temp(rchi2point5_Index)
+         vals(3) = rchi
+         vals(4) = mass(rchi_Index)
+         vals(5) = Temp(rchi_Index)
+         vals(6) = Temp(rchi2point5_Index)
 
          
 
