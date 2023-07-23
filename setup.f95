@@ -27,7 +27,7 @@ module setup
     !proton-DM cross section in cm^2
     real(dp), parameter :: sigma_p = 1.D-37
     !Dark matter mass in GeV
-    real(dp), parameter :: mchi = 10.D0
+    real(dp), parameter :: mchi = 5.D0
     !speed of sun relative to dark matter distribution in km/s
     real(dp) :: vtilde = 220.D5
     !velocity dispersion of the dark matter in km/s
@@ -268,6 +268,10 @@ module setup
         end if
 
         dN_DM = captureRate * timestep
+        !check run_star_extras
+        !in the extras_finish_step subroutine
+        !we set xtra(1) = xtra(2)
+        !which only occurs if MESA accepts the timestep
 	    N_DM = starptr% xtra(1) + dN_DM
 	    starptr% xtra(2) = N_DM
 
