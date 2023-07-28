@@ -4,3 +4,4 @@ LOGS/.ipynb_checkpoints/Plots-checkpoint.ipynb
 .DS_Store
 LOGS/
 photos/
+.vscode/settings.json
